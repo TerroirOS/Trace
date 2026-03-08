@@ -1,0 +1,42 @@
+{
+  "producers": [
+    {
+      "producerId": "producer-orkolani-001",
+      "legalName": "Orkolani Family Cellar",
+      "countryCode": "GE",
+      "region": "Kakheti",
+      "organizationWallet": "0x1111111111111111111111111111111111111111"
+    }
+  ],
+  "issuers": [
+    {
+      "issuerId": "issuer-orkolani-ops",
+      "organizationName": "Orkolani Operations",
+      "walletAddress": "0x1111111111111111111111111111111111111111",
+      "roles": ["WINERY_OPERATOR"],
+      "trusted": true
+    },
+    {
+      "issuerId": "issuer-georgia-gi-board",
+      "organizationName": "Georgia GI Board",
+      "walletAddress": "0x2222222222222222222222222222222222222222",
+      "roles": ["CERTIFIER", "ASSOCIATION"],
+      "trusted": true
+    }
+  ],
+  "batches": [
+    {
+      "batchId": "demo-batch-001",
+      "producerId": "producer-orkolani-001",
+      "productType": "Wine",
+      "varietalOrSubtype": "Saperavi",
+      "vineyardOrFarmLocation": "Telavi, Kakheti",
+      "harvestDate": "2025-09-20",
+      "schemaVersion": "1.0.0"
+    }
+  ],
+  "notes": {
+    "pilotContext": "Sample data for Georgian wine provenance demonstrations.",
+    "useCases": ["importer verification", "anti-counterfeit checks", "PDO/GI support"]
+  }
+}
