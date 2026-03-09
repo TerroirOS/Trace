@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS producers (
   legal_name TEXT NOT NULL,
   country_code CHAR(2) NOT NULL,
   region TEXT,
-  organization_wallet TEXT NOT NULL
+  organization_wallet TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS batches (
@@ -13,29 +14,32 @@ CREATE TABLE IF NOT EXISTS batches (
   varietal_or_subtype TEXT NOT NULL,
   vineyard_or_farm_location TEXT NOT NULL,
   harvest_date DATE NOT NULL,
-  schema_version TEXT NOT NULL
+  schema_version TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS issuer_attestations (
+CREATE TABLE IF NOT EXISTS issuers (
   issuer_id TEXT PRIMARY KEY,
   organization_name TEXT NOT NULL,
   wallet_address TEXT NOT NULL,
   roles JSONB NOT NULL,
-  trusted BOOLEAN NOT NULL DEFAULT TRUE
+  trusted BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS batch_events (
   event_id TEXT PRIMARY KEY,
   batch_id TEXT NOT NULL REFERENCES batches(batch_id),
   event_type TEXT NOT NULL,
-  issuer_id TEXT NOT NULL REFERENCES issuer_attestations(issuer_id),
+  issuer_id TEXT NOT NULL REFERENCES issuers(issuer_id),
   event_timestamp TIMESTAMPTZ NOT NULL,
   payload JSONB NOT NULL,
   payout_reference TEXT,
   document_refs JSONB NOT NULL,
   prev_event_hash TEXT,
   signature TEXT NOT NULL,
-  event_hash TEXT NOT NULL
+  event_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS documents (
@@ -44,7 +48,8 @@ CREATE TABLE IF NOT EXISTS documents (
   uri TEXT NOT NULL,
   content_hash TEXT NOT NULL,
   media_type TEXT,
-  visibility TEXT NOT NULL
+  visibility TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS chain_transactions (
@@ -54,9 +59,13 @@ CREATE TABLE IF NOT EXISTS chain_transactions (
   tx_hash TEXT,
   block_number BIGINT,
   error TEXT,
+  retry_count INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL
 );
+
+ALTER TABLE chain_transactions
+  ADD COLUMN IF NOT EXISTS retry_count INTEGER NOT NULL DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS external_events (
   external_event_id TEXT PRIMARY KEY,
@@ -66,3 +75,15 @@ CREATE TABLE IF NOT EXISTS external_events (
   payload JSONB NOT NULL,
   related_batch_id TEXT REFERENCES batches(batch_id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS chain_transactions_event_id_uniq
+  ON chain_transactions(event_id);
+
+CREATE INDEX IF NOT EXISTS chain_transactions_status_updated_at_idx
+  ON chain_transactions(status, updated_at DESC);
+
+CREATE INDEX IF NOT EXISTS batch_events_batch_id_event_timestamp_idx
+  ON batch_events(batch_id, event_timestamp DESC);
+
+CREATE INDEX IF NOT EXISTS batch_events_issuer_id_event_timestamp_idx
+  ON batch_events(issuer_id, event_timestamp DESC);

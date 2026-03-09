@@ -7,7 +7,7 @@ export class VerificationController {
   constructor(private readonly verificationService: VerificationService) {}
 
   @Get(":batchId")
-  verifyBatch(@Param("batchId") batchId: string): VerificationResult {
+  async verifyBatch(@Param("batchId") batchId: string): Promise<VerificationResult> {
     return this.verificationService.verifyBatch(batchId);
   }
 }

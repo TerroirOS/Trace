@@ -1,54 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Brand palette */
+  --vine-deep: #1B3A1A;
+  --vine-green: #2D5A27;
+  --vine-green-light: #3A7A32;
+  --vine-green-muted: rgba(45, 90, 39, 0.12);
+  --plum: #3D1F3D;
+  --plum-light: #5C3A5C;
+  --plum-muted: rgba(61, 31, 61, 0.10);
+  --verdelho-gold: #C4A235;
+  --verdelho-gold-light: #D4B545;
+  --verdelho-gold-muted: rgba(196, 162, 53, 0.14);
+  --rose-blush: #D4838F;
+  --rose-blush-muted: rgba(212, 131, 143, 0.14);
+  --slate-blue: #4A5568;
+  --slate-blue-light: #718096;
+  --slate-blue-muted: rgba(74, 85, 104, 0.10);
+
+  --ink: #1A1A2E;
+  --ink-soft: #4A5568;
+  --muted: #A8ADB3;
+  --parchment: #F5F0E8;
+  --bg: #FAF9F6;
+  --panel: #FFFFFF;
+  --line: rgba(74, 85, 104, 0.14);
+  --shadow: rgba(26, 26, 46, 0.06);
+  --shadow-md: rgba(26, 26, 46, 0.10);
+
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+
+  --font-serif: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+  --font-sans: 'Inter', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', Menlo, Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
 body {
   margin: 0;
-  font-family: Inter, Arial, sans-serif;
-  background: #f8fafb;
-  color: #0e1726;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 24px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-}
+a { color: var(--vine-green); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-.header a {
-  color: #1f2937;
-  text-decoration: none;
-  margin-left: 12px;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  line-height: 1.2;
   font-weight: 600;
 }
 
-.container {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 20px;
-}
+.container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
 .card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .badge {
-  display: inline-block;
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 12px;
-  margin-right: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
 }
-
-.ok {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.warn {
-  background: #fef3c7;
-  color: #92400e;
-}
+.ok { background: var(--vine-green-muted); color: var(--vine-green); border-color: rgba(45,90,39,0.24); }
+.warn { background: var(--verdelho-gold-muted); color: #8A6D0B; border-color: rgba(196,162,53,0.28); }
+.danger { background: var(--rose-blush-muted); color: #9B3A47; border-color: rgba(212,131,143,0.28); }

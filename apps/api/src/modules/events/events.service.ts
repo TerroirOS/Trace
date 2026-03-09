@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import type { BatchEvent } from "@terroiros/schemas";
-import { traceEventSchema } from "@terroiros/schemas";
+import { hashTraceEvent, traceEventSchema } from "@terroiros/schemas";
 import { StoreService } from "../data/store.service";
 import { BatchesService } from "../batches/batches.service";
 import { IssuersService } from "../issuers/issuers.service";
@@ -17,7 +17,7 @@ export class EventsService {
     private readonly eventAuthzService: EventAuthzService
   ) {}
 
-  create(input: BatchEvent): BatchEvent {
+  async create(input: BatchEvent): Promise<BatchEvent> {
     this.batchesService.getById(input.batchId);
     this.issuersService.getById(input.issuerId);
     const event = traceEventSchema.parse(input);
@@ -25,7 +25,8 @@ export class EventsService {
     const recoveredSigner = this.eventAuthzService.verifySignature(event);
     this.store.batchEvents.set(event.eventId, event);
     this.store.recoveredSignersByEventId.set(event.eventId, recoveredSigner);
-    this.chainService.queueAttestation(event.eventId);
+    this.store.eventHashesByEventId.set(event.eventId, hashTraceEvent(event));
+    await this.chainService.queueAttestation(event.eventId);
     return event;
   }
 

@@ -7,7 +7,7 @@ export class ChainWorker {
   constructor(private readonly chainService: ChainService) {}
 
   @Interval(5000)
-  syncQueue(): void {
-    this.chainService.processQueueTick();
+  async syncQueue(): Promise<void> {
+    await this.chainService.processQueueTick();
   }
 }

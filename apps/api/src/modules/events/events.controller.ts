@@ -7,7 +7,7 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post()
-  create(@Body() body: BatchEvent): BatchEvent {
+  async create(@Body() body: BatchEvent): Promise<BatchEvent> {
     return this.eventsService.create(body);
   }
 

@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "nest start --watch",
-    "build": "nest build",
-    "start": "node dist/main.js",
+    "dev": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/apps/api/src/main.js",
     "test": "jest --passWithNoTests && npm run test:e2e",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "lint": "tsc -p tsconfig.json --noEmit"

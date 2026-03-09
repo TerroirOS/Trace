@@ -8,6 +8,7 @@ export interface ChainTransaction {
   txHash?: string;
   blockNumber?: number;
   error?: string;
+  retryCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,4 +21,5 @@ export class StoreService {
   readonly batchEvents = new Map<string, BatchEvent>();
   readonly chainTransactions = new Map<string, ChainTransaction>();
   readonly recoveredSignersByEventId = new Map<string, string>();
+  readonly eventHashesByEventId = new Map<string, string>();
 }

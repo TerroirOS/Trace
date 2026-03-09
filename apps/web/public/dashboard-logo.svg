@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Terroir Trace dashboard logo</title>
+  <desc id="desc">A five-lobed grape leaf with serrated edges, a central chip, and outward circuit traces.</desc>
+  <defs>
+    <linearGradient id="leafFill" x1="26" y1="98" x2="100" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9BBC83"/>
+      <stop offset="0.55" stop-color="#DDE5CC"/>
+      <stop offset="1" stop-color="#F2E7CD"/>
+    </linearGradient>
+    <radialGradient id="leafShade" cx="0" cy="0" r="1" gradientTransform="translate(52 74) rotate(-12) scale(56 42)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7FA96A" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#7FA96A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chipFill" x1="54" y1="50" x2="74" y2="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#EEF2DF"/>
+      <stop offset="1" stop-color="#CBD9B8"/>
+    </linearGradient>
+  </defs>
+
+  <path
+    d="M64 8L58 16L54 24L48 35L38 30L32 30L29 37L24 44L24 52L18 54L15 61L17 68L12 73L16 79L22 84L18 92L24 98L33 100L38 101L36 110L45 113L55 112L64 107L73 112L83 113L92 110L90 101L95 100L104 98L110 92L106 84L112 79L116 73L111 68L113 61L110 54L104 52L104 44L99 37L96 30L90 30L80 35L74 24L70 16Z"
+    fill="url(#leafFill)"
+    stroke="#24362B"
+    stroke-width="4.2"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <path
+    d="M64 8L58 16L54 24L48 35L38 30L32 30L29 37L24 44L24 52L18 54L15 61L17 68L12 73L16 79L22 84L18 92L24 98L33 100L38 101L36 110L45 113L55 112L64 107L73 112L83 113L92 110L90 101L95 100L104 98L110 92L106 84L112 79L116 73L111 68L113 61L110 54L104 52L104 44L99 37L96 30L90 30L80 35L74 24L70 16Z"
+    fill="url(#leafShade)"
+    stroke="none"
+  />
+
+  <g fill="none" stroke="#24362B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M64 49V28"/>
+    <path d="M69 51V39L76 32"/>
+    <path d="M74 60H87L95 53"/>
+    <path d="M74 67H86L95 74"/>
+    <path d="M59 51V39L52 32"/>
+    <path d="M54 60L43 49L34 42"/>
+    <path d="M54 67L43 78L35 86"/>
+    <path d="M64 71C64 88 60 100 50 110"/>
+  </g>
+
+  <g fill="#DEE6CF" stroke="#24362B" stroke-width="4">
+    <circle cx="64" cy="26" r="3.8"/>
+    <circle cx="76" cy="30" r="3.8"/>
+    <circle cx="95" cy="53" r="3.8"/>
+    <circle cx="95" cy="74" r="3.8"/>
+    <circle cx="52" cy="30" r="3.8"/>
+    <circle cx="34" cy="42" r="3.8"/>
+    <circle cx="35" cy="86" r="3.8"/>
+  </g>
+
+  <rect x="53" y="49" width="22" height="22" rx="4.5" fill="url(#chipFill)" stroke="#24362B" stroke-width="4"/>
+
+  <g fill="none" stroke="#24362B" stroke-width="4" stroke-linecap="round">
+    <line x1="50" y1="55" x2="46" y2="55"/>
+    <line x1="50" y1="61" x2="45" y2="61"/>
+    <line x1="50" y1="67" x2="46" y2="67"/>
+    <line x1="78" y1="55" x2="82" y2="55"/>
+    <line x1="78" y1="61" x2="83" y2="61"/>
+    <line x1="78" y1="67" x2="82" y2="67"/>
+    <line x1="59" y1="46" x2="59" y2="42"/>
+    <line x1="69" y1="46" x2="69" y2="42"/>
+    <line x1="59" y1="74" x2="59" y2="78"/>
+    <line x1="69" y1="74" x2="69" y2="78"/>
+  </g>
+</svg>

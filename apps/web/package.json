@@ -3,13 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "dev:reset": "npm run clean && next dev --hostname 127.0.0.1 --port 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.9.0",
+    "@supabase/supabase-js": "^2.98.0",
+    "@types/qrcode": "^1.5.6",
     "next": "^14.2.16",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

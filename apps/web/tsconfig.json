@@ -12,6 +12,10 @@
     "allowJs": false,
     "noEmit": true,
     "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"

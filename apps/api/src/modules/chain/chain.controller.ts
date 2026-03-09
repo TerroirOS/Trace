@@ -7,7 +7,7 @@ export class ChainController {
   constructor(private readonly chainService: ChainService) {}
 
   @Get("transactions")
-  listTransactions(): ChainTransaction[] {
+  async listTransactions(): Promise<ChainTransaction[]> {
     return this.chainService.listTransactions();
   }
 }
