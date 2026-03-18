@@ -15,14 +15,26 @@ Georgian wine.
 
 ## Quick start
 
-1. Install dependencies:
-   - `npm install`
-2. Start local services:
+1. Confirm the repo bootstrap baseline:
+   - `npm.cmd run bootstrap:check`
+2. Install dependencies:
+   - `npm.cmd install`
+3. Copy environment defaults:
+   - `Copy-Item .env.example .env`
+4. Start local services:
    - `docker compose up -d`
-3. Start API:
-   - `npm run dev -w @terroiros/api`
-4. Start Web:
-   - `npm run dev -w @terroiros/web`
+5. Start API:
+   - `npm.cmd run dev -w @terroiros/api`
+6. Start Web:
+   - `npm.cmd run dev -w @terroiros/web`
+
+## Bootstrap notes
+
+- On Windows PowerShell, use `npm.cmd` instead of `npm` when script execution
+  policy blocks `npm.ps1`.
+- `npm run bootstrap:check` is dependency-free and validates the expected
+  workspace files, lockfile, Node version, and core environment keys before
+  install/build steps.
 
 ## Data policy
 
