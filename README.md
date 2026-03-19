@@ -19,6 +19,7 @@ Georgian wine.
    - `npm.cmd run bootstrap:check`
 2. Install dependencies:
    - `npm.cmd install`
+   - If install fails, run `npm.cmd run deps:check` for a concise dependency and cache diagnostic.
 3. Copy environment defaults:
    - `Copy-Item .env.example .env`
 4. Start local services:
@@ -35,6 +36,8 @@ Georgian wine.
 - `npm run bootstrap:check` is dependency-free and validates the expected
   workspace files, lockfile, Node version, and core environment keys before
   install/build steps.
+- `npm run deps:check` summarizes missing workspace dependencies and known
+  offline-cache blockers before you retry install/build.
 
 ## Data policy
 

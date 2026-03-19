@@ -9,10 +9,11 @@
   ],
   "scripts": {
     "bootstrap:check": "node scripts/bootstrap-check.mjs",
-    "build": "npm run build --workspaces --if-present",
+    "deps:check": "node scripts/check-install-state.mjs",
+    "build": "node scripts/run-workspaces.mjs build",
     "dev": "npm run dev --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
+    "test": "node scripts/run-workspaces.mjs test",
+    "lint": "node scripts/run-workspaces.mjs lint",
     "format": "prettier --check .",
     "format:write": "prettier --write ."
   },
