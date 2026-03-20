@@ -22,6 +22,8 @@ Georgian wine.
    - If install fails, run `npm.cmd run deps:check` for a concise dependency and cache diagnostic.
 3. Copy environment defaults:
    - `Copy-Item .env.example .env`
+   - See `docs/environment.md` for the full env contract and which values are
+     actually required per runtime.
 4. Start local services:
    - `docker compose up -d`
 5. Start API:
@@ -38,6 +40,8 @@ Georgian wine.
   install/build steps.
 - `npm run deps:check` summarizes missing workspace dependencies and known
   offline-cache blockers before you retry install/build.
+- `docs/environment.md` defines the shared root `.env` contract used by
+  `apps/api`, `apps/web`, and `packages/contracts`.
 
 ## Data policy
 

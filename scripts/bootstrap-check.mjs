@@ -45,11 +45,12 @@ record(Boolean(npmExecPath), "npm runtime is available", npmExecPath ? `Using ${
 const envContent = readFileSync(join(rootDir, ".env.example"), "utf8");
 for (const key of [
   "DATABASE_URL",
-  "SUPABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
   "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "SUPABASE_SERVICE_ROLE_KEY",
   "TRACE_API_URL",
   "CHAIN_RPC_URL",
+  "DEPLOYER_PRIVATE_KEY",
 ]) {
   record(envContent.includes(`${key}=`), `.env.example includes ${key}`);
 }
@@ -76,6 +77,7 @@ console.log("");
 console.log("Next steps");
 console.log("----------");
 console.log("1. Copy .env.example to .env and fill secrets before running app services.");
+console.log("   See docs/environment.md for required vs optional values by runtime.");
 console.log("2. Start local dependencies with `docker compose up -d`.");
 console.log("3. Install dependencies with `npm.cmd install`.");
 console.log("4. Use `npm.cmd run build` to validate the workspace once install succeeds.");
