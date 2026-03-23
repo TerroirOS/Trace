@@ -2,6 +2,12 @@
   "name": "@terroiros/contracts",
   "version": "0.1.0",
   "private": true,
+  "main": "abis/index.js",
+  "types": "abis/index.d.ts",
+  "exports": {
+    ".": "./abis/index.js",
+    "./abis": "./abis/index.js"
+  },
   "scripts": {
     "build": "hardhat compile",
     "test": "hardhat test",

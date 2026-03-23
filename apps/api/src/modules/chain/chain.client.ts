@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { getContractAbis } from "@terroiros/contracts/abis";
 import {
   Contract,
   FallbackProvider,
@@ -8,8 +9,6 @@ import {
   keccak256,
   toUtf8Bytes
 } from "ethers";
-import * as fs from "node:fs";
-import * as path from "node:path";
 
 interface AttestationContractRecord {
   eventId: string;
@@ -173,91 +172,10 @@ export class ChainClient {
   }
 
   private loadContractArtifacts(): ContractArtifacts {
-    const attestationCandidates = [
-      path.resolve(
-        process.cwd(),
-        "packages/contracts/artifacts/src/AttestationRegistry.sol/AttestationRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "../packages/contracts/artifacts/src/AttestationRegistry.sol/AttestationRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "../../packages/contracts/artifacts/src/AttestationRegistry.sol/AttestationRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "packages/contracts/artifacts/contracts/src/AttestationRegistry.sol/AttestationRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "../packages/contracts/artifacts/contracts/src/AttestationRegistry.sol/AttestationRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "../../packages/contracts/artifacts/contracts/src/AttestationRegistry.sol/AttestationRegistry.json"
-      )
-    ];
-    const batchCandidates = [
-      path.resolve(
-        process.cwd(),
-        "packages/contracts/artifacts/src/BatchRegistry.sol/BatchRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "../packages/contracts/artifacts/src/BatchRegistry.sol/BatchRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "../../packages/contracts/artifacts/src/BatchRegistry.sol/BatchRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "packages/contracts/artifacts/contracts/src/BatchRegistry.sol/BatchRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "../packages/contracts/artifacts/contracts/src/BatchRegistry.sol/BatchRegistry.json"
-      ),
-      path.resolve(
-        process.cwd(),
-        "../../packages/contracts/artifacts/contracts/src/BatchRegistry.sol/BatchRegistry.json"
-      )
-    ];
-
-    const attestationAbi = this.tryLoadAbi(attestationCandidates);
-    const batchAbi = this.tryLoadAbi(batchCandidates);
-    if (attestationAbi && batchAbi) {
-      return { attestationAbi, batchAbi };
+    const abis = getContractAbis();
+    if (abis.attestationAbi.length === 0 || abis.batchAbi.length === 0) {
+      this.logger.warn("Contract ABI export returned an empty ABI payload.");
     }
-
-    this.logger.warn("Contract artifacts not found. Falling back to minimal runtime ABI.");
-    return {
-      attestationAbi:
-        attestationAbi ?? [
-          "function recordAttestation(bytes32 eventId, bytes32 batchId, bytes32 attestationHash)",
-          "function getAttestation(bytes32 eventId) view returns (tuple(bytes32 eventId, bytes32 batchId, bytes32 attestationHash, address issuer, uint256 timestamp))"
-        ],
-      batchAbi:
-        batchAbi ?? [
-          "function anchorBatch(bytes32 batchId, bytes32 rootHash, bytes32 metadataHash)",
-          "function getBatch(bytes32 batchId) view returns (tuple(bytes32 rootHash, bytes32 metadataHash, address issuer, uint256 createdAt, bool exists))"
-        ]
-    };
-  }
-
-  private tryLoadAbi(candidates: string[]): readonly unknown[] | null {
-    for (const candidatePath of candidates) {
-      if (!fs.existsSync(candidatePath)) {
-        continue;
-      }
-      const payload = fs.readFileSync(candidatePath, "utf-8");
-      const parsed = JSON.parse(payload) as { abi: readonly unknown[] };
-      if (Array.isArray(parsed.abi) && parsed.abi.length > 0) {
-        return parsed.abi;
-      }
-    }
-    return null;
+    return abis;
   }
 }
