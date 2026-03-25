@@ -11,6 +11,9 @@
   "scripts": {
     "build": "hardhat compile",
     "test": "hardhat test",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
     "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
     "deploy:amoy": "hardhat run scripts/deploy.ts --network amoy"
   },

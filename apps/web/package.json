@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "clean": "node ../../scripts/remove-path.mjs .next"
+    "clean": "node ../../scripts/remove-path.mjs .next",
+    "format": "prettier --check .",
+    "format:write": "prettier --write ."
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",
