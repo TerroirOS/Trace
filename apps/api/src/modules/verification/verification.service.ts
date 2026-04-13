@@ -4,8 +4,8 @@ import { hashTraceEvent } from "@terroiros/schemas";
 import { BatchesService } from "../batches/batches.service";
 import { EventsService } from "../events/events.service";
 import { IssuersService } from "../issuers/issuers.service";
-import { StoreService } from "../data/store.service";
 import { ChainClient } from "../chain/chain.client";
+import { ChainService } from "../chain/chain.service";
 
 const expectedLifecycle = new Set<TraceEventType>([
   "BATCH_CREATED",
@@ -21,19 +21,19 @@ export class VerificationService {
     private readonly batchesService: BatchesService,
     private readonly eventsService: EventsService,
     private readonly issuersService: IssuersService,
-    private readonly store: StoreService,
-    private readonly chainClient: ChainClient
+    private readonly chainClient: ChainClient,
+    private readonly chainService: ChainService
   ) {}
 
   async verifyBatch(batchId: string): Promise<VerificationResult> {
-    this.batchesService.getById(batchId);
-    const events = this.eventsService.listByBatch(batchId);
+    await this.batchesService.getById(batchId);
+    const events = await this.eventsService.listByBatch(batchId);
 
     const signaturesValid = events.every((event) => Boolean(event.signature));
-    let trustedIssuersOnly = events.every((event) => {
-      const issuer = this.issuersService.getById(event.issuerId);
-      return issuer.trusted;
-    });
+    const issuers = await Promise.all(
+      events.map((event) => this.issuersService.getById(event.issuerId))
+    );
+    let trustedIssuersOnly = issuers.every((issuer) => issuer.trusted);
     const hashesConsistentLocally = events.every(
       (event) => hashTraceEvent(event).length === 64
     );
@@ -65,7 +65,7 @@ export class VerificationService {
         if (onChainRecord.attestationHash !== expectedHash) {
           hashMismatchCount += 1;
         }
-        const issuer = this.issuersService.getById(event.issuerId);
+        const issuer = await this.issuersService.getById(event.issuerId);
         const expectedWallet = issuer.walletAddress.toLowerCase();
         if (onChainRecord.issuer !== expectedWallet) {
           issuerMismatchCount += 1;
@@ -92,9 +92,8 @@ export class VerificationService {
         notes.push("No events are anchored on-chain yet.");
       }
     } else {
-      const txByEvent = new Map(
-        [...this.store.chainTransactions.values()].map((tx) => [tx.eventId, tx.status])
-      );
+      const transactions = await this.chainService.listTransactions();
+      const txByEvent = new Map(transactions.map((tx) => [tx.eventId, tx.status]));
       const confirmedCount = events.filter(
         (event) => txByEvent.get(event.eventId) === "CONFIRMED"
       ).length;

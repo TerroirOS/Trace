@@ -1,0 +1,243 @@
+{
+  "producers": [
+    {
+      "producerId": "producer-orkolani-001",
+      "legalName": "Orkolani Family Cellar",
+      "countryCode": "GE",
+      "region": "Kakheti",
+      "organizationWallet": "0x1111111111111111111111111111111111111111"
+    }
+  ],
+  "issuers": [
+    {
+      "issuerId": "issuer-orkolani-ops",
+      "organizationName": "Orkolani Operations",
+      "walletAddress": "0x1111111111111111111111111111111111111111",
+      "roles": ["WINERY_OPERATOR", "PRODUCER"],
+      "trusted": true
+    },
+    {
+      "issuerId": "issuer-georgia-gi-board",
+      "organizationName": "Georgia GI Board",
+      "walletAddress": "0x2222222222222222222222222222222222222222",
+      "roles": ["CERTIFIER", "ASSOCIATION"],
+      "trusted": true
+    },
+    {
+      "issuerId": "issuer-kakheti-logistics",
+      "organizationName": "Kakheti Cellar Logistics",
+      "walletAddress": "0x3333333333333333333333333333333333333333",
+      "roles": ["LOGISTICS_PROVIDER"],
+      "trusted": true
+    }
+  ],
+  "batches": [
+    {
+      "batchId": "demo-batch-001",
+      "producerId": "producer-orkolani-001",
+      "productType": "Wine",
+      "varietalOrSubtype": "Saperavi",
+      "vineyardOrFarmLocation": "Telavi, Kakheti",
+      "harvestDate": "2025-09-20",
+      "schemaVersion": "1.0.0"
+    }
+  ],
+  "events": [
+    {
+      "eventId": "demo-event-001",
+      "batchId": "demo-batch-001",
+      "eventType": "BATCH_CREATED",
+      "issuerId": "issuer-orkolani-ops",
+      "timestamp": "2025-09-20T06:00:00+04:00",
+      "payload": {
+        "batchLabel": "2025 Reserve Saperavi",
+        "intendedMarket": "EU pilot importers",
+        "plannedBottleCount": 1200
+      },
+      "documentRefs": [
+        {
+          "uri": "s3://trace-evidence/demo-batch-001/batch-created.json",
+          "contentHash": "ef584770ab45389ef8f4a60f925a934dd6a839c1b81cbc9d33b83f401a53f556",
+          "mediaType": "application/json",
+          "visibility": "PRIVATE"
+        }
+      ],
+      "signature": "0x1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "eventId": "demo-event-002",
+      "batchId": "demo-batch-001",
+      "eventType": "HARVEST_RECORDED",
+      "issuerId": "issuer-orkolani-ops",
+      "timestamp": "2025-09-20T19:15:00+04:00",
+      "payload": {
+        "grapeVariety": "Saperavi",
+        "harvestedKg": 8400,
+        "parcelCode": "TEL-07",
+        "weatherSummary": "Dry, late-summer harvest window"
+      },
+      "documentRefs": [
+        {
+          "uri": "s3://trace-evidence/demo-batch-001/harvest-log.pdf",
+          "contentHash": "bfab6ddd319cff1bbc4c13dbf65afffd8af3f12d2735ff7f746f7338bb088026",
+          "mediaType": "application/pdf",
+          "visibility": "PRIVATE"
+        }
+      ],
+      "signature": "0x2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "eventId": "demo-event-003",
+      "batchId": "demo-batch-001",
+      "eventType": "PROCESSING_RECORDED",
+      "issuerId": "issuer-orkolani-ops",
+      "timestamp": "2025-10-06T11:30:00+04:00",
+      "payload": {
+        "fermentationMethod": "Qvevri",
+        "vesselCount": 4,
+        "processingLot": "QV-2025-17",
+        "sulfurAddedMgPerL": 25
+      },
+      "documentRefs": [
+        {
+          "uri": "s3://trace-evidence/demo-batch-001/cellar-processing.csv",
+          "contentHash": "f67daf02b2eeb8b00a801b8fcbec62cfd6b882cb14f965f986311f8955b949be",
+          "mediaType": "text/csv",
+          "visibility": "PRIVATE"
+        }
+      ],
+      "signature": "0x3333333333333333333333333333333333333333333333333333333333333333"
+    },
+    {
+      "eventId": "demo-event-004",
+      "batchId": "demo-batch-001",
+      "eventType": "BOTTLING_RECORDED",
+      "issuerId": "issuer-orkolani-ops",
+      "timestamp": "2026-01-18T09:45:00+04:00",
+      "payload": {
+        "bottleSizeMl": 750,
+        "bottledUnits": 1120,
+        "closureType": "Natural cork",
+        "lotCode": "SAP-25-RSV"
+      },
+      "payoutReference": "INV-2026-001",
+      "documentRefs": [
+        {
+          "uri": "s3://trace-evidence/demo-batch-001/bottling-report.pdf",
+          "contentHash": "140b2caecf6c37b7238a4e7ee3d20f709f54012e4b218f5305037335fb0e9f53",
+          "mediaType": "application/pdf",
+          "visibility": "PRIVATE"
+        }
+      ],
+      "signature": "0x4444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "eventId": "demo-event-005",
+      "batchId": "demo-batch-001",
+      "eventType": "SHIPMENT_RECORDED",
+      "issuerId": "issuer-kakheti-logistics",
+      "timestamp": "2026-02-02T14:10:00+04:00",
+      "payload": {
+        "destinationCountry": "DE",
+        "incoterm": "DAP",
+        "containerId": "MSKU1234567",
+        "carrier": "Black Sea Intermodal"
+      },
+      "documentRefs": [
+        {
+          "uri": "s3://trace-evidence/demo-batch-001/shipment-bol.pdf",
+          "contentHash": "1780657d607818af4f41fb09ff108d842fef2e5621857d37221233fbef193af1",
+          "mediaType": "application/pdf",
+          "visibility": "PRIVATE"
+        }
+      ],
+      "signature": "0x5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    {
+      "eventId": "demo-event-006",
+      "batchId": "demo-batch-001",
+      "eventType": "THIRD_PARTY_VERIFIED",
+      "issuerId": "issuer-georgia-gi-board",
+      "timestamp": "2026-02-05T10:20:00+04:00",
+      "payload": {
+        "verificationType": "GI conformity",
+        "certificateId": "GI-2026-0042",
+        "verdict": "PASS",
+        "notes": "Origin and chain-of-custody evidence align with PDO requirements."
+      },
+      "documentRefs": [
+        {
+          "uri": "s3://trace-evidence/demo-batch-001/gi-certificate.pdf",
+          "contentHash": "15cde48fe2b4f13038f0f820ee0dce1f42db7d95cdff4634c8293fd7693df1bf",
+          "mediaType": "application/pdf",
+          "visibility": "PUBLIC"
+        }
+      ],
+      "signature": "0x6666666666666666666666666666666666666666666666666666666666666666"
+    }
+  ],
+  "chainTransactions": [
+    {
+      "txId": "demo-tx-001",
+      "eventId": "demo-event-001",
+      "status": "CONFIRMED",
+      "txHash": "0xaaaabbbbccccddddeeeeffff0000111122223333444455556666777788889999",
+      "blockNumber": 1001,
+      "createdAt": "2025-09-20T02:01:00Z",
+      "updatedAt": "2025-09-20T02:02:00Z"
+    },
+    {
+      "txId": "demo-tx-002",
+      "eventId": "demo-event-002",
+      "status": "CONFIRMED",
+      "txHash": "0xbbbbccccddddeeeeffff0000111122223333444455556666777788889999aaaa",
+      "blockNumber": 1002,
+      "createdAt": "2025-09-20T15:16:00Z",
+      "updatedAt": "2025-09-20T15:17:00Z"
+    },
+    {
+      "txId": "demo-tx-003",
+      "eventId": "demo-event-003",
+      "status": "CONFIRMED",
+      "txHash": "0xccccddddeeeeffff0000111122223333444455556666777788889999aaaabbbb",
+      "blockNumber": 1010,
+      "createdAt": "2025-10-06T07:31:00Z",
+      "updatedAt": "2025-10-06T07:32:00Z"
+    },
+    {
+      "txId": "demo-tx-004",
+      "eventId": "demo-event-004",
+      "status": "CONFIRMED",
+      "txHash": "0xddddeeeeffff0000111122223333444455556666777788889999aaaabbbbcccc",
+      "blockNumber": 1099,
+      "createdAt": "2026-01-18T05:46:00Z",
+      "updatedAt": "2026-01-18T05:47:00Z"
+    },
+    {
+      "txId": "demo-tx-005",
+      "eventId": "demo-event-005",
+      "status": "SUBMITTED",
+      "txHash": "0xeeeeffff0000111122223333444455556666777788889999aaaabbbbccccdddd",
+      "blockNumber": null,
+      "createdAt": "2026-02-02T10:11:00Z",
+      "updatedAt": "2026-02-02T10:11:30Z"
+    },
+    {
+      "txId": "demo-tx-006",
+      "eventId": "demo-event-006",
+      "status": "CONFIRMED",
+      "txHash": "0xffff0000111122223333444455556666777788889999aaaabbbbccccddddeeee",
+      "blockNumber": 1115,
+      "createdAt": "2026-02-05T06:21:00Z",
+      "updatedAt": "2026-02-05T06:22:00Z"
+    }
+  ],
+  "notes": {
+    "pilotContext": "Deterministic Georgian wine demo data for local Trace bootstrap.",
+    "useCases": [
+      "producer onboarding walkthrough",
+      "issuer attestation and verification demo",
+      "public batch verification against event and chain state"
+    ]
+  }
+}

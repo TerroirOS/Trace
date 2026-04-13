@@ -1,6 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import type { Batch } from "@terroiros/schemas";
-import { batchSchema } from "@terroiros/schemas";
 import { StoreService } from "../data/store.service";
 import { ProducersService } from "../producers/producers.service";
 
@@ -11,22 +10,16 @@ export class BatchesService {
     private readonly producersService: ProducersService
   ) {}
 
-  create(input: Batch): Batch {
-    this.producersService.getById(input.producerId);
-    const batch = batchSchema.parse(input);
-    this.store.batches.set(batch.batchId, batch);
-    return batch;
+  async create(input: Batch): Promise<Batch> {
+    await this.producersService.getById(input.producerId);
+    return this.store.saveBatch(input);
   }
 
-  list(): Batch[] {
-    return [...this.store.batches.values()];
+  async list(): Promise<Batch[]> {
+    return this.store.listBatches();
   }
 
-  getById(batchId: string): Batch {
-    const batch = this.store.batches.get(batchId);
-    if (!batch) {
-      throw new NotFoundException(`Batch ${batchId} not found.`);
-    }
-    return batch;
+  async getById(batchId: string): Promise<Batch> {
+    return this.store.getBatchById(batchId);
   }
 }

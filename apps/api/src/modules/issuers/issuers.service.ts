@@ -1,27 +1,20 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import type { Issuer } from "@terroiros/schemas";
-import { issuerSchema } from "@terroiros/schemas";
 import { StoreService } from "../data/store.service";
 
 @Injectable()
 export class IssuersService {
   constructor(private readonly store: StoreService) {}
 
-  create(input: Issuer): Issuer {
-    const issuer = issuerSchema.parse(input);
-    this.store.issuers.set(issuer.issuerId, issuer);
-    return issuer;
+  async create(input: Issuer): Promise<Issuer> {
+    return this.store.saveIssuer(input);
   }
 
-  list(): Issuer[] {
-    return [...this.store.issuers.values()];
+  async list(): Promise<Issuer[]> {
+    return this.store.listIssuers();
   }
 
-  getById(issuerId: string): Issuer {
-    const issuer = this.store.issuers.get(issuerId);
-    if (!issuer) {
-      throw new NotFoundException(`Issuer ${issuerId} not found.`);
-    }
-    return issuer;
+  async getById(issuerId: string): Promise<Issuer> {
+    return this.store.getIssuerById(issuerId);
   }
 }

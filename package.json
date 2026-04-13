@@ -10,6 +10,10 @@
   "scripts": {
     "bootstrap:check": "node scripts/bootstrap-check.mjs",
     "deps:check": "node scripts/check-install-state.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:seed": "node scripts/db-seed.mjs",
+    "db:setup": "node scripts/db-migrate.mjs && node scripts/db-seed.mjs",
+    "verify:db-restart": "node scripts/verify-db-restart.mjs",
     "build": "node scripts/run-workspaces.mjs build",
     "dev": "npm run dev --workspaces --if-present",
     "test": "node scripts/run-workspaces.mjs test",

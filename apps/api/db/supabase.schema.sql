@@ -9,6 +9,12 @@ create table if not exists producers (
   created_at timestamptz not null default now()
 );
 
+create index if not exists producers_organization_wallet_idx
+  on producers(organization_wallet);
+
+create unique index if not exists producers_organization_wallet_unique_idx
+  on producers(lower(organization_wallet));
+
 create table if not exists batches (
   batch_id text primary key,
   producer_id text not null references producers(producer_id),
@@ -21,24 +27,31 @@ create table if not exists batches (
   created_at timestamptz not null default now()
 );
 
+create index if not exists batches_producer_id_idx
+  on batches(producer_id);
+
 create table if not exists issuers (
   issuer_id text primary key,
   organization_name text not null,
   wallet_address text not null,
-  roles jsonb not null,
+  roles jsonb not null default '[]'::jsonb,
   trusted boolean not null default true,
   created_at timestamptz not null default now()
 );
 
+create index if not exists issuers_wallet_address_idx
+  on issuers(wallet_address);
+
 create table if not exists batch_events (
   event_id text primary key,
   batch_id text not null references batches(batch_id),
+  schema_version text not null default '1.0.0',
   event_type text not null,
   issuer_id text not null references issuers(issuer_id),
   event_timestamp timestamptz not null,
-  payload jsonb not null,
+  payload jsonb not null default '{}'::jsonb,
   payout_reference text,
-  document_refs jsonb not null,
+  document_refs jsonb not null default '[]'::jsonb,
   prev_event_hash text,
   signature text not null,
   event_hash text not null,
@@ -57,6 +70,12 @@ create table if not exists chain_transactions (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists auth_challenges (
+  wallet_address text primary key,
+  challenge text not null,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists documents (
   id bigserial primary key,
   event_id text not null references batch_events(event_id),
@@ -67,14 +86,29 @@ create table if not exists documents (
   created_at timestamptz not null default now()
 );
 
+create table if not exists external_events (
+  external_event_id text primary key,
+  source text not null,
+  event_type text not null,
+  observed_at timestamptz not null,
+  payload jsonb not null default '{}'::jsonb,
+  related_batch_id text references batches(batch_id)
+);
+
 create unique index if not exists chain_transactions_event_id_uniq
   on chain_transactions(event_id);
 
 create index if not exists chain_transactions_status_updated_at_idx
   on chain_transactions(status, updated_at desc);
 
+create index if not exists auth_challenges_created_at_idx
+  on auth_challenges(created_at desc);
+
 create index if not exists batch_events_batch_id_event_timestamp_idx
   on batch_events(batch_id, event_timestamp desc);
 
 create index if not exists batch_events_issuer_id_event_timestamp_idx
   on batch_events(issuer_id, event_timestamp desc);
+
+create index if not exists external_events_related_batch_id_idx
+  on external_events(related_batch_id);

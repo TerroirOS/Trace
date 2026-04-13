@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { ChainService } from "./chain.service";
-import type { ChainTransaction } from "../data/store.service";
+import type { ChainTransaction } from "../data/chain-transaction.types";
 
 @Controller("chain")
 export class ChainController {

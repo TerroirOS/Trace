@@ -13,6 +13,12 @@ Base URL: `http://localhost:4000`
 - `GET /producers`
 - `GET /producers/:producerId`
 
+`POST /producers` enforces:
+
+- DTO validation and field normalization
+- idempotent replays for matching producer records
+- conflict rejection for producer ID or wallet ownership mismatches
+
 ## Issuers
 
 - `POST /issuers`

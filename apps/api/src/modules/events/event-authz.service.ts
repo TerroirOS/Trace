@@ -16,8 +16,8 @@ const allowedRolesByEventType: Record<TraceEventType, string[]> = {
 export class EventAuthzService {
   constructor(private readonly issuersService: IssuersService) {}
 
-  verifySignature(event: BatchEvent): string {
-    const issuer = this.issuersService.getById(event.issuerId);
+  async verifySignature(event: BatchEvent): Promise<string> {
+    const issuer = await this.issuersService.getById(event.issuerId);
     const domain = {
       name: "TerroirOS Trace",
       version: event.schemaVersion,
@@ -51,8 +51,8 @@ export class EventAuthzService {
     return recovered.toLowerCase();
   }
 
-  authorizeEventType(event: BatchEvent): void {
-    const issuer = this.issuersService.getById(event.issuerId);
+  async authorizeEventType(event: BatchEvent): Promise<void> {
+    const issuer = await this.issuersService.getById(event.issuerId);
     const allowedRoles = allowedRolesByEventType[event.eventType];
     const hasAllowedRole = issuer.roles.some((role) => allowedRoles.includes(role));
     if (!hasAllowedRole) {

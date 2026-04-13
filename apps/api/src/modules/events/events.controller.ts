@@ -12,12 +12,12 @@ export class EventsController {
   }
 
   @Get(":eventId")
-  getById(@Param("eventId") eventId: string): BatchEvent {
+  async getById(@Param("eventId") eventId: string): Promise<BatchEvent> {
     return this.eventsService.getById(eventId);
   }
 
   @Get("batch/:batchId")
-  listByBatch(@Param("batchId") batchId: string): BatchEvent[] {
+  async listByBatch(@Param("batchId") batchId: string): Promise<BatchEvent[]> {
     return this.eventsService.listByBatch(batchId);
   }
 }

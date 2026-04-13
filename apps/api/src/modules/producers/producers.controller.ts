@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import type { Producer } from "@terroiros/schemas";
+import { CreateProducerDto, toProducerInput } from "./producers.dto";
 import { ProducersService } from "./producers.service";
 
 @Controller("producers")
@@ -7,17 +8,17 @@ export class ProducersController {
   constructor(private readonly producersService: ProducersService) {}
 
   @Post()
-  create(@Body() body: Producer): Producer {
-    return this.producersService.create(body);
+  async create(@Body() body: CreateProducerDto): Promise<Producer> {
+    return this.producersService.create(toProducerInput(body));
   }
 
   @Get()
-  list(): Producer[] {
+  async list(): Promise<Producer[]> {
     return this.producersService.list();
   }
 
   @Get(":producerId")
-  getById(@Param("producerId") producerId: string): Producer {
+  async getById(@Param("producerId") producerId: string): Promise<Producer> {
     return this.producersService.getById(producerId);
   }
 }

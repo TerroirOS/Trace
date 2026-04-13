@@ -7,6 +7,12 @@ CREATE TABLE IF NOT EXISTS producers (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS producers_organization_wallet_idx
+  ON producers(organization_wallet);
+
+CREATE UNIQUE INDEX IF NOT EXISTS producers_organization_wallet_unique_idx
+  ON producers(LOWER(organization_wallet));
+
 CREATE TABLE IF NOT EXISTS batches (
   batch_id TEXT PRIMARY KEY,
   producer_id TEXT NOT NULL REFERENCES producers(producer_id),
@@ -18,24 +24,31 @@ CREATE TABLE IF NOT EXISTS batches (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS batches_producer_id_idx
+  ON batches(producer_id);
+
 CREATE TABLE IF NOT EXISTS issuers (
   issuer_id TEXT PRIMARY KEY,
   organization_name TEXT NOT NULL,
   wallet_address TEXT NOT NULL,
-  roles JSONB NOT NULL,
+  roles JSONB NOT NULL DEFAULT '[]'::JSONB,
   trusted BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS issuers_wallet_address_idx
+  ON issuers(wallet_address);
+
 CREATE TABLE IF NOT EXISTS batch_events (
   event_id TEXT PRIMARY KEY,
   batch_id TEXT NOT NULL REFERENCES batches(batch_id),
+  schema_version TEXT NOT NULL DEFAULT '1.0.0',
   event_type TEXT NOT NULL,
   issuer_id TEXT NOT NULL REFERENCES issuers(issuer_id),
   event_timestamp TIMESTAMPTZ NOT NULL,
-  payload JSONB NOT NULL,
+  payload JSONB NOT NULL DEFAULT '{}'::JSONB,
   payout_reference TEXT,
-  document_refs JSONB NOT NULL,
+  document_refs JSONB NOT NULL DEFAULT '[]'::JSONB,
   prev_event_hash TEXT,
   signature TEXT NOT NULL,
   event_hash TEXT NOT NULL,
@@ -67,6 +80,12 @@ CREATE TABLE IF NOT EXISTS chain_transactions (
 ALTER TABLE chain_transactions
   ADD COLUMN IF NOT EXISTS retry_count INTEGER NOT NULL DEFAULT 0;
 
+CREATE TABLE IF NOT EXISTS auth_challenges (
+  wallet_address TEXT PRIMARY KEY,
+  challenge TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS external_events (
   external_event_id TEXT PRIMARY KEY,
   source TEXT NOT NULL,
@@ -76,11 +95,17 @@ CREATE TABLE IF NOT EXISTS external_events (
   related_batch_id TEXT REFERENCES batches(batch_id)
 );
 
+CREATE INDEX IF NOT EXISTS external_events_related_batch_id_idx
+  ON external_events(related_batch_id);
+
 CREATE UNIQUE INDEX IF NOT EXISTS chain_transactions_event_id_uniq
   ON chain_transactions(event_id);
 
 CREATE INDEX IF NOT EXISTS chain_transactions_status_updated_at_idx
   ON chain_transactions(status, updated_at DESC);
+
+CREATE INDEX IF NOT EXISTS auth_challenges_created_at_idx
+  ON auth_challenges(created_at DESC);
 
 CREATE INDEX IF NOT EXISTS batch_events_batch_id_event_timestamp_idx
   ON batch_events(batch_id, event_timestamp DESC);

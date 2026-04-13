@@ -26,9 +26,15 @@ Georgian wine.
      actually required per runtime.
 4. Start local services:
    - `docker compose up -d`
-5. Start API:
+5. Prepare the local database:
+   - `npm.cmd run db:setup`
+   - Use `npm.cmd run db:migrate -- --dry-run` or `npm.cmd run db:seed -- --dry-run`
+     if you want to inspect the plan first.
+   - Use `npm.cmd run verify:db-restart` after install/build when you want to
+     prove the seeded list/detail endpoints survive an API restart.
+6. Start API:
    - `npm.cmd run dev -w @terroiros/api`
-6. Start Web:
+7. Start Web:
    - `npm.cmd run dev -w @terroiros/web`
 
 ## Bootstrap notes
@@ -42,6 +48,10 @@ Georgian wine.
   offline-cache blockers before you retry install/build.
 - `docs/environment.md` defines the shared root `.env` contract used by
   `apps/api`, `apps/web`, and `packages/contracts`.
+- `docs/local-demo-data.md` documents the migration runner and the default
+  Georgian wine demo seed used for local development.
+- `docs/restart-verification.md` documents the DB-backed restart verification
+  flow for the API endpoints.
 
 ## Data policy
 

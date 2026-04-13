@@ -21,12 +21,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post("challenge")
-  issueChallenge(@Body() body: ChallengeRequestDto): { challenge: string } {
+  async issueChallenge(
+    @Body() body: ChallengeRequestDto
+  ): Promise<{ challenge: string }> {
     return this.authService.issueChallenge(body.walletAddress);
   }
 
   @Post("verify")
-  verify(@Body() body: VerifyRequestDto): { token: string } {
+  async verify(@Body() body: VerifyRequestDto): Promise<{ token: string }> {
     return this.authService.verifyChallenge(body);
   }
 }

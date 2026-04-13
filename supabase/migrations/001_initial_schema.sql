@@ -15,7 +15,7 @@ CREATE TABLE producers (
   legal_name      TEXT NOT NULL,
   country_code    CHAR(2) NOT NULL DEFAULT 'GE',
   region          TEXT,
-  organization_wallet TEXT,
+  organization_wallet TEXT NOT NULL,
   profile_image_url   TEXT,
   description     TEXT,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -31,11 +31,11 @@ CREATE TABLE batches (
   id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   batch_id                TEXT NOT NULL UNIQUE,
   producer_id             TEXT NOT NULL REFERENCES producers(producer_id) ON DELETE CASCADE,
-  product_type            TEXT NOT NULL DEFAULT 'wine',
-  varietal_or_subtype     TEXT,
-  vineyard_or_farm_location TEXT,
-  harvest_date            DATE,
-  schema_version          TEXT NOT NULL DEFAULT '0.1.0',
+  product_type            TEXT NOT NULL,
+  varietal_or_subtype     TEXT NOT NULL,
+  vineyard_or_farm_location TEXT NOT NULL,
+  harvest_date            DATE NOT NULL,
+  schema_version          TEXT NOT NULL DEFAULT '1.0.0',
   qr_token                UUID NOT NULL DEFAULT gen_random_uuid(),
   created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at              TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -51,9 +51,9 @@ CREATE TABLE issuers (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   issuer_id         TEXT NOT NULL UNIQUE,
   organization_name TEXT NOT NULL,
-  wallet_address    TEXT,
-  roles             TEXT[] NOT NULL DEFAULT '{}',
-  trusted           BOOLEAN NOT NULL DEFAULT false,
+  wallet_address    TEXT NOT NULL,
+  roles             JSONB NOT NULL DEFAULT '[]'::JSONB,
+  trusted           BOOLEAN NOT NULL DEFAULT true,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -67,12 +67,15 @@ CREATE TABLE batch_events (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id        TEXT NOT NULL UNIQUE,
   batch_id        TEXT NOT NULL REFERENCES batches(batch_id) ON DELETE CASCADE,
+  schema_version  TEXT NOT NULL DEFAULT '1.0.0',
   event_type      TEXT NOT NULL,
   issuer_id       TEXT NOT NULL REFERENCES issuers(issuer_id),
-  timestamp       TIMESTAMPTZ NOT NULL DEFAULT now(),
-  payload         JSONB NOT NULL DEFAULT '{}',
-  signature       TEXT,
-  event_hash      TEXT,
+  event_timestamp TIMESTAMPTZ NOT NULL DEFAULT now(),
+  payload         JSONB NOT NULL DEFAULT '{}'::JSONB,
+  document_refs   JSONB NOT NULL DEFAULT '[]'::JSONB,
+  prev_event_hash TEXT,
+  signature       TEXT NOT NULL,
+  event_hash      TEXT NOT NULL,
   payout_reference TEXT,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -86,19 +89,16 @@ CREATE INDEX idx_batch_events_type ON batch_events (event_type);
 -- 5. documents  (evidence files stored in Supabase Storage)
 -- =============================================================
 CREATE TABLE documents (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  document_id     TEXT NOT NULL UNIQUE,
-  event_id        TEXT REFERENCES batch_events(event_id),
-  batch_id        TEXT REFERENCES batches(batch_id),
-  file_name       TEXT NOT NULL,
-  mime_type       TEXT,
-  storage_path    TEXT NOT NULL,
-  sha256_hash     TEXT,
+  id              BIGSERIAL PRIMARY KEY,
+  event_id        TEXT NOT NULL REFERENCES batch_events(event_id),
+  uri             TEXT NOT NULL,
+  content_hash    TEXT NOT NULL,
+  media_type      TEXT,
+  visibility      TEXT NOT NULL,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_documents_event ON documents (event_id);
-CREATE INDEX idx_documents_batch ON documents (batch_id);
 
 -- =============================================================
 -- 6. chain_transactions  (on-chain anchoring status)
@@ -106,12 +106,13 @@ CREATE INDEX idx_documents_batch ON documents (batch_id);
 CREATE TABLE chain_transactions (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tx_id           TEXT NOT NULL UNIQUE,
-  event_id        TEXT REFERENCES batch_events(event_id),
+  event_id        TEXT NOT NULL REFERENCES batch_events(event_id),
   status          TEXT NOT NULL DEFAULT 'QUEUED'
                     CHECK (status IN ('QUEUED','SUBMITTED','CONFIRMED','FAILED')),
   tx_hash         TEXT,
   block_number    BIGINT,
   error           TEXT,
+  retry_count     INTEGER NOT NULL DEFAULT 0,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -120,18 +121,29 @@ CREATE INDEX idx_chain_tx_event ON chain_transactions (event_id);
 CREATE INDEX idx_chain_tx_status ON chain_transactions (status);
 
 -- =============================================================
--- 7. external_events  (Shield extension placeholder)
+-- 7. auth_challenges  (wallet challenge persistence)
 -- =============================================================
-CREATE TABLE external_events (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  batch_id        TEXT REFERENCES batches(batch_id),
-  source          TEXT NOT NULL,
-  event_type      TEXT NOT NULL,
-  payload         JSONB NOT NULL DEFAULT '{}',
-  received_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+CREATE TABLE auth_challenges (
+  wallet_address  TEXT PRIMARY KEY,
+  challenge       TEXT NOT NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_external_events_batch ON external_events (batch_id);
+CREATE INDEX idx_auth_challenges_created_at ON auth_challenges (created_at DESC);
+
+-- =============================================================
+-- 8. external_events  (Shield extension placeholder)
+-- =============================================================
+CREATE TABLE external_events (
+  external_event_id TEXT PRIMARY KEY,
+  source          TEXT NOT NULL,
+  event_type      TEXT NOT NULL,
+  observed_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  payload         JSONB NOT NULL DEFAULT '{}'::JSONB,
+  related_batch_id TEXT REFERENCES batches(batch_id)
+);
+
+CREATE INDEX idx_external_events_batch ON external_events (related_batch_id);
 
 -- =============================================================
 -- Auto-update updated_at trigger
@@ -159,6 +171,7 @@ ALTER TABLE issuers            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE batch_events       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chain_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE auth_challenges    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE external_events    ENABLE ROW LEVEL SECURITY;
 
 -- Public read for verification pages (anon role)
@@ -168,6 +181,7 @@ CREATE POLICY "Public read issuers"            ON issuers            FOR SELECT 
 CREATE POLICY "Public read batch_events"       ON batch_events       FOR SELECT USING (true);
 CREATE POLICY "Public read documents"          ON documents          FOR SELECT USING (true);
 CREATE POLICY "Public read chain_transactions" ON chain_transactions FOR SELECT USING (true);
+CREATE POLICY "Service read auth_challenges"   ON auth_challenges    FOR SELECT USING (auth.role() = 'service_role');
 CREATE POLICY "Public read external_events"    ON external_events    FOR SELECT USING (true);
 
 -- Authenticated users can insert/update their own producer data

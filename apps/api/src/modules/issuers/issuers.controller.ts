@@ -7,17 +7,17 @@ export class IssuersController {
   constructor(private readonly issuersService: IssuersService) {}
 
   @Post()
-  create(@Body() body: Issuer): Issuer {
+  async create(@Body() body: Issuer): Promise<Issuer> {
     return this.issuersService.create(body);
   }
 
   @Get()
-  list(): Issuer[] {
+  async list(): Promise<Issuer[]> {
     return this.issuersService.list();
   }
 
   @Get(":issuerId")
-  getById(@Param("issuerId") issuerId: string): Issuer {
+  async getById(@Param("issuerId") issuerId: string): Promise<Issuer> {
     return this.issuersService.getById(issuerId);
   }
 }

@@ -7,17 +7,17 @@ export class BatchesController {
   constructor(private readonly batchesService: BatchesService) {}
 
   @Post()
-  create(@Body() body: Batch): Batch {
+  async create(@Body() body: Batch): Promise<Batch> {
     return this.batchesService.create(body);
   }
 
   @Get()
-  list(): Batch[] {
+  async list(): Promise<Batch[]> {
     return this.batchesService.list();
   }
 
   @Get(":batchId")
-  getById(@Param("batchId") batchId: string): Batch {
+  async getById(@Param("batchId") batchId: string): Promise<Batch> {
     return this.batchesService.getById(batchId);
   }
 }

@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import { hashTraceEvent, sha256Hex, stableStringify } from "@terroiros/schemas";
-import { StoreService, type ChainTransaction } from "../data/store.service";
+import type { ChainTransaction } from "../data/chain-transaction.types";
+import { StoreService } from "../data/store.service";
 import { ChainClient } from "./chain.client";
-import { ChainTransactionsStoreService } from "./chain-transactions.store";
 
 @Injectable()
 export class ChainService {
@@ -11,21 +11,12 @@ export class ChainService {
 
   constructor(
     private readonly store: StoreService,
-    private readonly chainClient: ChainClient,
-    private readonly txStore: ChainTransactionsStoreService
+    private readonly chainClient: ChainClient
   ) {}
 
   async queueAttestation(eventId: string): Promise<ChainTransaction> {
-    const existingInMemory = [...this.store.chainTransactions.values()].find(
-      (tx) => tx.eventId === eventId
-    );
-    if (existingInMemory) {
-      return existingInMemory;
-    }
-
-    const existingPersisted = await this.txStore.findByEventId(eventId);
+    const existingPersisted = await this.store.getChainTransactionByEventId(eventId);
     if (existingPersisted) {
-      this.store.chainTransactions.set(existingPersisted.txId, existingPersisted);
       return existingPersisted;
     }
 
@@ -38,20 +29,13 @@ export class ChainService {
       createdAt: now,
       updatedAt: now
     };
-    this.store.chainTransactions.set(tx.txId, tx);
-    await this.txStore.upsert(tx);
-    return tx;
+    return this.store.saveChainTransaction(tx);
   }
 
   async listTransactions(): Promise<ChainTransaction[]> {
-    if (this.txStore.isEnabled()) {
-      const persisted = await this.txStore.list();
-      if (persisted.length > 0) {
-        for (const tx of persisted) {
-          this.store.chainTransactions.set(tx.txId, tx);
-        }
-        return persisted;
-      }
+    const persisted = await this.store.listChainTransactions();
+    if (persisted.length > 0) {
+      return persisted;
     }
     return [...this.store.chainTransactions.values()].sort((left, right) =>
       right.createdAt.localeCompare(left.createdAt)
@@ -82,32 +66,16 @@ export class ChainService {
           }
 
           if (tx.status === "QUEUED") {
-            const event = this.store.batchEvents.get(tx.eventId);
-            if (!event) {
-              tx.status = "FAILED";
-              tx.error = "Missing in-memory event payload for queue item.";
-              tx.retryCount = (tx.retryCount ?? 0) + 1;
-              tx.updatedAt = new Date().toISOString();
-              await this.persist(tx);
-              continue;
-            }
-
-            const eventHash = hashTraceEvent(event);
-            const batch = this.store.batches.get(event.batchId);
-            if (!batch) {
-              tx.status = "FAILED";
-              tx.error = `Missing batch ${event.batchId} for attestation.`;
-              tx.retryCount = (tx.retryCount ?? 0) + 1;
-              tx.updatedAt = new Date().toISOString();
-              await this.persist(tx);
-              continue;
-            }
-            const batchFingerprint = this.computeBatchFingerprint(
-              event.batchId,
+            const event = await this.store.getBatchEventById(tx.eventId);
+            const eventHash =
+              (await this.store.getEventHashById(event.eventId)) ?? hashTraceEvent(event);
+            const batch = await this.store.getBatchById(event.batchId);
+            const batchFingerprint = await this.computeBatchFingerprint(
+              batch.batchId,
               eventHash
             );
             await this.chainClient.ensureBatchAnchor({
-              batchId: event.batchId,
+              batchId: batch.batchId,
               batchFingerprint
             });
             const submission = await this.chainClient.recordAttestation({
@@ -200,16 +168,19 @@ export class ChainService {
   }
 
   private async persist(tx: ChainTransaction): Promise<void> {
-    this.store.chainTransactions.set(tx.txId, tx);
-    await this.txStore.upsert(tx);
+    await this.store.saveChainTransaction(tx);
   }
 
-  private computeBatchFingerprint(batchId: string, fallbackEventHash: string): string {
-    const batch = this.store.batches.get(batchId);
+  private async computeBatchFingerprint(
+    batchId: string,
+    fallbackEventHash: string
+  ): Promise<string> {
+    const batch = await this.store.getBatchById(batchId);
     if (!batch) {
       return fallbackEventHash;
     }
-    const earliestEventHash = this.getEarliestEventHash(batchId) ?? fallbackEventHash;
+    const earliestEventHash =
+      (await this.getEarliestEventHash(batchId)) ?? fallbackEventHash;
     const canonical = stableStringify({
       batchId: batch.batchId,
       producerId: batch.producerId,
@@ -223,14 +194,12 @@ export class ChainService {
     return sha256Hex(canonical);
   }
 
-  private getEarliestEventHash(batchId: string): string | null {
-    const events = [...this.store.batchEvents.values()]
-      .filter((event) => event.batchId === batchId)
-      .sort((left, right) => left.timestamp.localeCompare(right.timestamp));
+  private async getEarliestEventHash(batchId: string): Promise<string | null> {
+    const events = await this.store.listBatchEventsByBatchId(batchId);
     const first = events[0];
     if (!first) {
       return null;
     }
-    return this.store.eventHashesByEventId.get(first.eventId) ?? hashTraceEvent(first);
+    return (await this.store.getEventHashById(first.eventId)) ?? hashTraceEvent(first);
   }
 }

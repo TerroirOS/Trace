@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import type { BatchEvent } from "@terroiros/schemas";
-import { hashTraceEvent, traceEventSchema } from "@terroiros/schemas";
+import { traceEventSchema } from "@terroiros/schemas";
 import { StoreService } from "../data/store.service";
 import { BatchesService } from "../batches/batches.service";
 import { IssuersService } from "../issuers/issuers.service";
@@ -18,30 +18,22 @@ export class EventsService {
   ) {}
 
   async create(input: BatchEvent): Promise<BatchEvent> {
-    this.batchesService.getById(input.batchId);
-    this.issuersService.getById(input.issuerId);
+    await this.batchesService.getById(input.batchId);
+    await this.issuersService.getById(input.issuerId);
     const event = traceEventSchema.parse(input);
-    this.eventAuthzService.authorizeEventType(event);
-    const recoveredSigner = this.eventAuthzService.verifySignature(event);
-    this.store.batchEvents.set(event.eventId, event);
-    this.store.recoveredSignersByEventId.set(event.eventId, recoveredSigner);
-    this.store.eventHashesByEventId.set(event.eventId, hashTraceEvent(event));
+    await this.eventAuthzService.authorizeEventType(event);
+    await this.eventAuthzService.verifySignature(event);
+    await this.store.saveBatchEvent(event);
     await this.chainService.queueAttestation(event.eventId);
     return event;
   }
 
-  listByBatch(batchId: string): BatchEvent[] {
-    this.batchesService.getById(batchId);
-    return [...this.store.batchEvents.values()]
-      .filter((event) => event.batchId === batchId)
-      .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  async listByBatch(batchId: string): Promise<BatchEvent[]> {
+    await this.batchesService.getById(batchId);
+    return this.store.listBatchEventsByBatchId(batchId);
   }
 
-  getById(eventId: string): BatchEvent {
-    const event = this.store.batchEvents.get(eventId);
-    if (!event) {
-      throw new NotFoundException(`Event ${eventId} not found.`);
-    }
-    return event;
+  async getById(eventId: string): Promise<BatchEvent> {
+    return this.store.getBatchEventById(eventId);
   }
 }
