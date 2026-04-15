@@ -13,6 +13,8 @@ TerroirOS Trace.
 - `local-demo-data.md`: local migration runner and deterministic Georgian wine seed flow
 - `restart-verification.md`: DB-backed API restart verification for list/detail endpoints
 - `producer-onboarding.md`: producer onboarding validation, idempotency, and wallet-uniqueness rules
+- `issuer-registration.md`: issuer registration validation, trust-role rules, and wallet-uniqueness guardrails
+- `batch-creation.md`: batch creation validation, duplicate-prevention, and schema-version guardrails
 - `tooling.md`: shared TypeScript, linting, and formatting baseline
 - `trace-production-architecture.md`: production blockchain + database requirements
 - `../apps/api/db/supabase.schema.sql`: Supabase DDL for MVP tables

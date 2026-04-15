@@ -30,6 +30,22 @@ create table if not exists batches (
 create index if not exists batches_producer_id_idx
   on batches(producer_id);
 
+create unique index if not exists batches_identity_unique_idx
+  on batches(
+    producer_id,
+    lower(product_type),
+    lower(varietal_or_subtype),
+    lower(vineyard_or_farm_location),
+    harvest_date
+  );
+
+alter table batches
+  drop constraint if exists batches_schema_version_chk;
+
+alter table batches
+  add constraint batches_schema_version_chk
+  check (schema_version = '1.0.0');
+
 create table if not exists issuers (
   issuer_id text primary key,
   organization_name text not null,
@@ -41,6 +57,19 @@ create table if not exists issuers (
 
 create index if not exists issuers_wallet_address_idx
   on issuers(wallet_address);
+
+create unique index if not exists issuers_wallet_address_unique_idx
+  on issuers(lower(wallet_address));
+
+alter table issuers
+  drop constraint if exists issuers_roles_non_empty_chk;
+
+alter table issuers
+  add constraint issuers_roles_non_empty_chk
+  check (
+    jsonb_typeof(roles) = 'array'
+    and jsonb_array_length(roles) > 0
+  );
 
 create table if not exists batch_events (
   event_id text primary key,

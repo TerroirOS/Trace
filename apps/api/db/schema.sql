@@ -27,6 +27,22 @@ CREATE TABLE IF NOT EXISTS batches (
 CREATE INDEX IF NOT EXISTS batches_producer_id_idx
   ON batches(producer_id);
 
+CREATE UNIQUE INDEX IF NOT EXISTS batches_identity_unique_idx
+  ON batches(
+    producer_id,
+    LOWER(product_type),
+    LOWER(varietal_or_subtype),
+    LOWER(vineyard_or_farm_location),
+    harvest_date
+  );
+
+ALTER TABLE batches
+  DROP CONSTRAINT IF EXISTS batches_schema_version_chk;
+
+ALTER TABLE batches
+  ADD CONSTRAINT batches_schema_version_chk
+  CHECK (schema_version = '1.0.0');
+
 CREATE TABLE IF NOT EXISTS issuers (
   issuer_id TEXT PRIMARY KEY,
   organization_name TEXT NOT NULL,
@@ -38,6 +54,19 @@ CREATE TABLE IF NOT EXISTS issuers (
 
 CREATE INDEX IF NOT EXISTS issuers_wallet_address_idx
   ON issuers(wallet_address);
+
+CREATE UNIQUE INDEX IF NOT EXISTS issuers_wallet_address_unique_idx
+  ON issuers(LOWER(wallet_address));
+
+ALTER TABLE issuers
+  DROP CONSTRAINT IF EXISTS issuers_roles_non_empty_chk;
+
+ALTER TABLE issuers
+  ADD CONSTRAINT issuers_roles_non_empty_chk
+  CHECK (
+    jsonb_typeof(roles) = 'array'
+    AND jsonb_array_length(roles) > 0
+  );
 
 CREATE TABLE IF NOT EXISTS batch_events (
   event_id TEXT PRIMARY KEY,

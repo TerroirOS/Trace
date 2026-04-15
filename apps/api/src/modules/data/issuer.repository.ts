@@ -73,6 +73,31 @@ export class IssuerRepository {
     return issuer;
   }
 
+  async findByWalletAddress(walletAddress: string): Promise<Issuer | null> {
+    const normalizedWallet = walletAddress.toLowerCase();
+    const cached = [...this.cache.values()].find(
+      (issuer) => issuer.walletAddress.toLowerCase() === normalizedWallet
+    );
+    if (cached) {
+      return cached;
+    }
+    const result = await this.databaseService.query(
+      `SELECT issuer_id, organization_name, wallet_address, roles, trusted
+       FROM issuers
+       WHERE lower(wallet_address) = lower($1)
+       LIMIT 1`,
+      [normalizedWallet],
+      `get issuer by wallet ${normalizedWallet}`
+    );
+    const row = result?.rows[0];
+    if (!row) {
+      return null;
+    }
+    const issuer = this.mapRow(row);
+    this.cache.set(issuer.issuerId, issuer);
+    return issuer;
+  }
+
   private mapRow(row: PgRow): Issuer {
     return issuerSchema.parse({
       issuerId: row.issuer_id,

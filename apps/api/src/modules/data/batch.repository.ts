@@ -80,6 +80,44 @@ export class BatchRepository {
     return batch;
   }
 
+  async findDuplicate(batch: Batch): Promise<Batch | null> {
+    const normalized = this.toDuplicateKey(batch);
+    const cached = [...this.cache.values()].find(
+      (entry) => this.toDuplicateKey(entry) === normalized && entry.batchId !== batch.batchId
+    );
+    if (cached) {
+      return cached;
+    }
+    const result = await this.databaseService.query(
+      `SELECT batch_id, producer_id, product_type, varietal_or_subtype,
+              vineyard_or_farm_location, harvest_date, schema_version
+       FROM batches
+       WHERE producer_id = $1
+         AND lower(product_type) = lower($2)
+         AND lower(varietal_or_subtype) = lower($3)
+         AND lower(vineyard_or_farm_location) = lower($4)
+         AND harvest_date = $5
+         AND batch_id <> $6
+       LIMIT 1`,
+      [
+        batch.producerId,
+        batch.productType,
+        batch.varietalOrSubtype,
+        batch.vineyardOrFarmLocation,
+        batch.harvestDate,
+        batch.batchId
+      ],
+      `find duplicate batch ${batch.batchId}`
+    );
+    const row = result?.rows[0];
+    if (!row) {
+      return null;
+    }
+    const duplicate = this.mapRow(row);
+    this.cache.set(duplicate.batchId, duplicate);
+    return duplicate;
+  }
+
   private mapRow(row: PgRow): Batch {
     const harvestDate =
       typeof row.harvest_date === "string"
@@ -101,5 +139,15 @@ export class BatchRepository {
     for (const value of values) {
       this.cache.set(value.batchId, value);
     }
+  }
+
+  private toDuplicateKey(batch: Batch): string {
+    return [
+      batch.producerId.trim(),
+      batch.productType.trim().toLowerCase(),
+      batch.varietalOrSubtype.trim().toLowerCase(),
+      batch.vineyardOrFarmLocation.trim().toLowerCase(),
+      batch.harvestDate
+    ].join("|");
   }
 }

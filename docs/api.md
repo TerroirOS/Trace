@@ -25,11 +25,25 @@ Base URL: `http://localhost:4000`
 - `GET /issuers`
 - `GET /issuers/:issuerId`
 
+`POST /issuers` enforces:
+
+- DTO validation and field normalization
+- idempotent replays for matching issuer registrations
+- conflict rejection for issuer ID, wallet ownership, role, or trust mismatches
+
 ## Batches
 
 - `POST /batches`
 - `GET /batches`
 - `GET /batches/:batchId`
+
+`POST /batches` enforces:
+
+- DTO validation and field normalization
+- producer existence checks before batch creation
+- idempotent replays for matching batch records
+- conflict rejection for batch ID reuse or duplicate producer/harvest fingerprints
+- schema-version validation against the current Trace batch contract
 
 ## Events
 

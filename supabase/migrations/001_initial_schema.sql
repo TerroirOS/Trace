@@ -43,6 +43,18 @@ CREATE TABLE batches (
 
 CREATE UNIQUE INDEX idx_batches_qr_token ON batches (qr_token);
 CREATE INDEX idx_batches_producer ON batches (producer_id);
+CREATE UNIQUE INDEX idx_batches_identity_unique
+  ON batches (
+    producer_id,
+    LOWER(product_type),
+    LOWER(varietal_or_subtype),
+    LOWER(vineyard_or_farm_location),
+    harvest_date
+  );
+
+ALTER TABLE batches
+  ADD CONSTRAINT batches_schema_version_chk
+  CHECK (schema_version = '1.0.0');
 
 -- =============================================================
 -- 3. issuers
@@ -59,6 +71,16 @@ CREATE TABLE issuers (
 );
 
 CREATE INDEX idx_issuers_wallet ON issuers (wallet_address);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_issuers_wallet_unique
+  ON issuers (LOWER(wallet_address));
+
+ALTER TABLE issuers
+  ADD CONSTRAINT issuers_roles_non_empty_chk
+  CHECK (
+    jsonb_typeof(roles) = 'array'
+    AND jsonb_array_length(roles) > 0
+  );
 
 -- =============================================================
 -- 4. batch_events  (attestation events)

@@ -102,6 +102,96 @@ describe("TerroirOS Trace E2E", () => {
       .expect(200);
     expect(verify.body.completeLifecycle).toBe(false);
   });
+
+  it("treats identical batch create requests as idempotent", async () => {
+    const wallet = Wallet.createRandom();
+    await request(app.getHttpServer())
+      .post("/producers")
+      .send({
+        producerId: "producer-001",
+        legalName: "Demo Winery",
+        countryCode: "GE",
+        region: "Kakheti",
+        organizationWallet: wallet.address
+      })
+      .expect(201);
+
+    const batch = {
+      batchId: "demo-batch-001",
+      producerId: "producer-001",
+      productType: "Wine",
+      varietalOrSubtype: "Saperavi",
+      vineyardOrFarmLocation: "Telavi",
+      harvestDate: "2025-09-12",
+      schemaVersion: "1.0.0"
+    };
+
+    await request(app.getHttpServer()).post("/batches").send(batch).expect(201);
+    await request(app.getHttpServer()).post("/batches").send(batch).expect(201);
+  });
+
+  it("rejects conflicting reuse of an existing batchId", async () => {
+    const wallet = Wallet.createRandom();
+    await createProducerBatchAndIssuer(app, wallet, true, ["WINERY_OPERATOR"]);
+
+    await request(app.getHttpServer())
+      .post("/batches")
+      .send({
+        batchId: "demo-batch-001",
+        producerId: "producer-001",
+        productType: "Wine",
+        varietalOrSubtype: "Rkatsiteli",
+        vineyardOrFarmLocation: "Telavi",
+        harvestDate: "2025-09-12",
+        schemaVersion: "1.0.0"
+      })
+      .expect(409);
+  });
+
+  it("rejects duplicate batches with different IDs but the same producer and harvest fingerprint", async () => {
+    const wallet = Wallet.createRandom();
+    await createProducerBatchAndIssuer(app, wallet, true, ["WINERY_OPERATOR"]);
+
+    await request(app.getHttpServer())
+      .post("/batches")
+      .send({
+        batchId: "demo-batch-002",
+        producerId: "producer-001",
+        productType: "wine",
+        varietalOrSubtype: "saperavi",
+        vineyardOrFarmLocation: "telavi",
+        harvestDate: "2025-09-12",
+        schemaVersion: "1.0.0"
+      })
+      .expect(409);
+  });
+
+  it("rejects unsupported batch schema versions", async () => {
+    const wallet = Wallet.createRandom();
+    await request(app.getHttpServer())
+      .post("/producers")
+      .send({
+        producerId: "producer-001",
+        legalName: "Demo Winery",
+        countryCode: "GE",
+        region: "Kakheti",
+        organizationWallet: wallet.address
+      })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post("/batches")
+      .send({
+        batchId: "demo-batch-001",
+        producerId: "producer-001",
+        productType: "Wine",
+        varietalOrSubtype: "Saperavi",
+        vineyardOrFarmLocation: "Telavi",
+        harvestDate: "2025-09-12",
+        schemaVersion: "2.0.0"
+      })
+      .expect(400);
+  });
 });
 
 async function createProducerBatchAndIssuer(

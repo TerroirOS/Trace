@@ -61,6 +61,14 @@ export class StoreService {
     return issuer;
   }
 
+  async findIssuerById(issuerId: string): Promise<Issuer | null> {
+    return this.issuerRepository.findById(issuerId);
+  }
+
+  async getIssuerByWalletAddress(walletAddress: string): Promise<Issuer | null> {
+    return this.issuerRepository.findByWalletAddress(walletAddress);
+  }
+
   async saveBatch(input: Batch): Promise<Batch> {
     return this.batchRepository.save(input);
   }
@@ -75,6 +83,14 @@ export class StoreService {
       throw new NotFoundException(`Batch ${batchId} not found.`);
     }
     return batch;
+  }
+
+  async findBatchById(batchId: string): Promise<Batch | null> {
+    return this.batchRepository.findById(batchId);
+  }
+
+  async findDuplicateBatch(input: Batch): Promise<Batch | null> {
+    return this.batchRepository.findDuplicate(input);
   }
 
   async saveBatchEvent(input: BatchEvent): Promise<BatchEvent> {
